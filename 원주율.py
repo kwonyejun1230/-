@@ -1,19 +1,37 @@
-import multiprocessing
 
-def calculate_pi_segment(start, end):
-    pi_estimate = 0
-    for i in range(start, end):
-        pi_estimate += ((-1) ** i) / (2 * i + 1)
+import random
+import threading
+
+def calculate_pi_part(samples, result, idx):
+    inside_circle = 0
+    for _ in range(samples):
+        x = random.uniform(-1, 1)
+        y = random.uniform(-1, 1)
+        if x**2 + y**2 <= 1:
+            inside_circle += 1
+    result[idx] = inside_circle
+
+def calculate_pi(num_samples, num_threads):
+    threads = []
+    results = [0] * num_threads
+    samples_per_thread = num_samples // num_threads
+
+    for i in range(num_threads):
+        thread = threading.Thread(target=calculate_pi_part, args=(samples_per_thread, results, i))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    total_inside_circle = sum(results)
+    pi_estimate = (total_inside_circle / num_samples) * 4
     return pi_estimate
 
-def calculate_pi(terms, num_processes):
-    segment_length = terms // num_processes
-    with multiprocessing.Pool(processes=num_processes) as pool:
-        results = pool.starmap(calculate_pi_segment, [(i * segment_length, (i + 1) * segment_length) for i in range(num_processes)])
-    return sum(results) * 4
+# 샘플 수와 스레드 수 설정
+num_samples = 1000000000 #정확도
+num_threads = 12  # i5-1240P의 코어 수에 맞춰 설정 cpu 수
 
-num_terms = 10000000  # 1천만 항
-num_processes = 12     # 12개 스레드
-pi_value = calculate_pi(num_terms, num_processes)
+pi_value = calculate_pi(num_samples, num_threads)
+print("추정된 원주율 값: {pi_value}")
 
-print(f"π의 근사값: {pi_value}")
