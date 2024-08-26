@@ -29,7 +29,7 @@ def calculate_pi(num_samples, num_threads):
     return pi_estimate
 
 # 샘플 수와 스레드 수 설정
-num_samples = 1000000000 #정확도
+num_samples = 2500000000 #정확도
 num_threads = 12  # i5-1240P의 코어 수에 맞춰 설정 cpu 수
 
 pi_value = calculate_pi(num_samples, num_threads)
